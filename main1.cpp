@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <iostream>
 #include <pthread.h>
@@ -16,7 +17,7 @@
 
 pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-#define PORT "3547" // the port users will be connecting to
+#define PORT "3549" // the port users will be connecting to
 #define BACKLOG 10	// how many pending connections queue will hold
 
 void *caesar_shift_by_1(void *p)
@@ -28,27 +29,42 @@ void *caesar_shift_by_1(void *p)
 	}
 	return (void *)data;
 }
-
 void *A1F1(void *t)
 {
-	return t;
+	// std::string *data = (std::string*)t;
+    // enQ(q2 , data );
+
+    return t;
 }
 
-// void *A1F2(void *t){
+void *lower_or_upper(void *t){
+    std::string *data = (std::string*)t;
+    for(int i = 0 ; i < data->size();i++){
+        char c = data->at(i);
+        if(isupper(c)){
+            data->at(i) = tolower(c);
+        }
+        else{
+            data->at(i)=toupper(c);
+        }
+        }
+    
+    return (void*)data;
+}
 
-// }
+void *A2F1(void *t){
 
-// void *A2F1(void *t){
+    return t;
 
-// }
+}
 
-// void *A2F2(void *t){
+void *send(void *t){
 
-// }
+}
 
-// void *A3F1(void *t){
+void *A3F1(void *t){
 
-// }
+}
 
 // void *A3F2(void *t){
 
@@ -158,6 +174,7 @@ typedef struct pipline
 	Active_o *ActiveOne;
 	Active_o *ActiveTwo;
 	Active_o *ActiveThree;
+    
 
 } Pipl;
 
@@ -241,7 +258,7 @@ char *string_to_char_arr(std::string str)
 void *T_FUNCTION(void *new_fdcl)
 {
 
-	// Queue *q2 = createQ();
+	
 	// Queue *q3 = createQ();
 
 	int th_cl = *(int *)new_fdcl;
@@ -260,16 +277,29 @@ void *T_FUNCTION(void *new_fdcl)
 			input[strlen(input) - 1] = '\0';
 			std::string str_input = char_arr_to_string(input);
 			std::cout << "str_input: " << str_input << std::endl;
+            Queue *q3 = createQ();
+            Queue *q2 = createQ();
 			Queue *q1 = createQ();
 			enQ(q1, &str_input);
+            enQ(q2, &str_input);
 			std::cout << "Data1 address: " << (q1->front->data) << std::endl;
 			std::cout << "Data1: " << *(std::string *)(q1->front->data) << std::endl;
 			Active_o *A1 = newAO(q1, caesar_shift_by_1, A1F1);
 			pthread_join(A1->t, NULL);
 			std::cout << "input_ans_after_ceaser: " << str_input << std::endl;
-			char *ans = string_to_char_arr(str_input);
+            Active_o *A2 = newAO(q2 , lower_or_upper , A2F1);
+            pthread_join(A2->t , NULL);
+            Active_o *A3 = newAO(q3 , send , A3F1 );
+            char *ans = string_to_char_arr(str_input);
 			send(th_cl, ans, strlen(ans), 0);
 			destroyAO(A1);
+            destroyAO(A2);
+
+            Pipl *p = (Pipl*)malloc(sizeof(Pipl));
+            p->ActiveOne = A1;
+            p->ActiveTwo = A2;
+            p->ActiveThree = A3;
+
 		}
 	}
 	close(th_cl);
