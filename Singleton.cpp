@@ -57,7 +57,7 @@ mutex Singleton<T>::mutex_;
 
 int main(int argc, char const *argv[])
 {
-    FILE *PTR;
+    FILE *PTR = fopen("ex6.txt" , "wb");
     Singleton<FILE *> *check = Singleton<FILE *>::instance(PTR);
     Singleton<FILE *> *check2 = Singleton<FILE *>::instance(PTR);
 

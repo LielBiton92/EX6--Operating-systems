@@ -19,13 +19,13 @@ int th;
 
 pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-#define PORT "3552" // the port users will be connecting to
+#define PORT "3559" // the port users will be connecting to
 #define BACKLOG 10	// how many pending connections queue will hold
 
 void *caesar(void *p)
 {
 	std::string *data = (std::string *)p;
-	for (int i = 0; i < data->size(); i++)
+	for (unsigned int i = 0; i < data->size(); i++)
 	{
 		if(data->at(i)=='z'){
 			data->at(i)= 'a';
@@ -38,17 +38,11 @@ void *caesar(void *p)
 	}
 	return (void *)data;
 }
-void *A1F1(void *t)
-{
-	// std::string *data = (std::string*)t;
-    // enQ(q2 , data );
 
-    return t;
-}
 
 void *lower_or_upper(void *t){
     std::string *data = (std::string*)t;
-    for(int i = 0 ; i < data->size();i++){
+    for(unsigned int i = 0 ; i < data->size();i++){
         char c = data->at(i);
         if(isupper(c)){
             data->at(i) = tolower(c);
@@ -73,9 +67,7 @@ void *A3F1(void *t){
 	return t;
 }
 
-// void *A3F2(void *t){
 
-// }
 
 typedef struct QueueNode
 {
@@ -166,6 +158,13 @@ Queue *q1;
 Queue *q2;
 Queue *q3;
 
+
+void *A1F1(void *t)
+{
+
+
+    return t;
+}
 typedef struct Active_Object
 {
 
@@ -187,8 +186,6 @@ typedef struct pipline
 
 void * send(void *p) {
     QueueNode * Data = (QueueNode *) p;
-    // printf("nptr->data: %s\n", nptr->getData());
-    // char * toSend = stdStringToCharPointer(*(std::string *)nptr->getData());
     char * toSend = (char *)Data->data;
     printf("sending: %s\n", toSend);
     send(th, toSend, strlen(toSend), 0);
@@ -200,9 +197,9 @@ void *runner(void *ActiveO)
 	Active_o *Active = (Active_o *)ActiveO;
 	while (Active->Q->Capacity > 0)
 	{
-		std::cout << "data in runner : " << *(std::string *)(Active->Q->front->data) << std::endl;
+		// std::cout << "data in runner : " << *(std::string *)(Active->Q->front->data) << std::endl;
 		void *func1 = Active->function1(deQ(Active->Q));
-		void *funct2 = Active->function2(func1);
+		Active->function2(func1);
 	}
 
 	return (void *)Active;
@@ -213,13 +210,13 @@ Active_o *newAO(struct Queue *q, void *function1(void *), void *function2(void *
 	Active_o *Active_obj = (Active_o *)malloc(sizeof(Active_o));
 	Active_obj->Q = q;
 	// printf("in const: %s\n", (char *)(Active_obj->Q->front->data));
-	std::cout << "in const : " << *(std::string *)Active_obj->Q->front->data << std::endl;
-	std::cout << "address: " << (std::string *)(Active_obj->Q->front->data) << std::endl;
+	// std::cout << "in const : " << *(std::string *)Active_obj->Q->front->data << std::endl;
+	// std::cout << "address: " << (std::string *)(Active_obj->Q->front->data) << std::endl;
 	Active_obj->function1 = function1;
 	Active_obj->function2 = function2;
-	std::cout << "before thread" << std::endl;
+	// std::cout << "before thread" << std::endl;
 	pthread_create(&Active_obj->t, NULL, runner, ((void *)Active_obj));
-	std::cout << "after thread" << std::endl;
+	// std::cout << "after thread" << std::endl;
 
 	return Active_obj;
 }
@@ -255,7 +252,7 @@ void *get_in_addr(struct sockaddr *sa)
 std::string char_arr_to_string(char *arr)
 {
 	std::string ans;
-	for (int i = 0; i < strlen(arr); i++)
+	for (unsigned int i = 0; i < strlen(arr); i++)
 	{
 		ans += arr[i];
 	}
@@ -265,7 +262,7 @@ std::string char_arr_to_string(char *arr)
 char *string_to_char_arr(std::string str)
 {
 	char *ans = (char *)malloc(sizeof(char) * str.size());
-	for (int i = 0; i < str.size(); i++)
+	for (unsigned int i = 0; i < str.size(); i++)
 	{
 		ans[i] = str[i];
 	}
@@ -282,16 +279,16 @@ void initializePip(Pipl *p, char *input , int sock){
 			enQ(q1, &str_input);
             enQ(q2, &str_input);
 			enQ(q3, &str_input);
-			std::cout << "Data1 address: " << (q1->front->data) << std::endl;
-			std::cout << "Data1: " << *(std::string *)(q1->front->data) << std::endl;
+			// std::cout << "Data1 address: " << (q1->front->data) << std::endl;
+			// std::cout << "Data1: " << *(std::string *)(q1->front->data) << std::endl;
 			p->ActiveOne = newAO(q1, caesar, A1F1);
 			pthread_join(p->ActiveOne->t, NULL);
-			std::cout << "input_ans_after_ceaser: " << str_input << std::endl;
+			// std::cout << "input_ans_after_ceaser: " << str_input << std::endl;
             p->ActiveTwo= newAO(q2 , lower_or_upper , A2F1);
             pthread_join(p->ActiveTwo->t , NULL);
             p->ActiveThree = newAO(q3 , send , A3F1 );
 			pthread_join(p->ActiveThree->t , NULL);
-            char *ans = string_to_char_arr(str_input);
+            // char *ans = string_to_char_arr(str_input);
 			destroyAO(p->ActiveOne);
             destroyAO(p->ActiveTwo);
 			destroyAO(p->ActiveThree);

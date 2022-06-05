@@ -14,7 +14,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
-#define PORT "3552" // the port client will be connecting to
+#define PORT "3559" // the port client will be connecting to
     
 #define MAXDATASIZE 100 // max number of bytes we can get at once
 
